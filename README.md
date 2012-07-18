@@ -1,5 +1,5 @@
 # PullPage
-A jQuery plugin for displaying an overlay over a regular page. Lots of options and callbacks.
+A jQuery plugin for displaying an overlay over a regular page. Lots of options and (some) callbacks.
 
 Great for call to action forms, advertising campaigns, splash pages, etc.
 
@@ -17,13 +17,15 @@ $('#myPullPage').pullPage({
   showTransition  : 0,                      // Milliseconds for pullPage fadeIn transition
   hideTransition  : 500,                    // Milliseconds for pullPage fadeOut transition
   showHideLink    : true,                   // Append a link to manually close  pullPage.
-  hideLinkText    : 'Hide me!',             // Text to display inside the hide link
+  hideLinkText    : 'Hide',                 // Text to display inside the hide link
   hideLinkClass   : 'pullPage-hide-link',   // Class for hide link
   containerClass  : 'pullPage-container',   // Class for pullPage container.
-  hiddenClass     : 'pullPage-hidden',      // This class is should be applied to the container
+  hiddenClass     : 'pullPage-hidden',      // This class should be applied to the container
                                             // for the rest of your site. Cannot be applied to the body.
-  hiddenClassEl   : false                   // Specify a $ selector for the element to apply
-                                            // the hiddenClass to.
+  hiddenClassEl   : $('#siteContainer'),    // Specify a $ selector for the element to apply
+                                            // the hiddenClass to. Pass false to not set a class.
+  pageLoaded      : function(){},           // Called immediately after the pullPage is loaded.
+  pageOnExit      : function(){}            // Called right before the page is transitioned out.
 });
 ```
 
@@ -44,8 +46,6 @@ myPullPage.hide();   // Hide
 The javascript takes care of most of the styling necessary, but there is a small amount of CSS
  required for the plugin to work nicely. Also, it's a good idea to put these styles close to
  the top of your document, because you want them to render ASAP.
-
-And thats it for now!
 
 ## License
 

@@ -1,6 +1,5 @@
-
 /**
- *  jQuery pullPage v0.1
+ *  jQuery pullPage v0.2
  *  Author: Jon Jaques <jon@jonjaques.com>
  *  License: WTFPL 2.0 <http://sam.zoy.org/wtfpl/COPYING>
  */
@@ -16,17 +15,23 @@
       "href"    : '#',
       "class"   : o.hideLinkClass,
       "text"    : o.hideLinkText
-    }).appendTo(el),
+    }).appendTo(el);
 
-    windowResize = function(){
+    // Add a backwards reference to element
+    el.data("pullPage", this);
+
+    // Make an inner element to house the content
+    el.wrapInner('<div class="pullPage-inner" style="position: relative">')
+      .addClass(o.containerClass);
+
+    var windowResize = function(){
       el.css({
         width: $(window).width(),
         height: $(window).height()
       });
     },
 
-    prepareDom = function(){
-
+    prepareWindow = function(){
       if(o.hiddenClassEl){
         $(o.hiddenClassEl).addClass(o.hiddenClass);
       }
@@ -46,37 +51,41 @@
       });
 
       $(window).bind('resize', windowResize);
-
     },
 
-    releaseDom = function(){
+    releaseWindow = function(){
+      $(window).unbind('resize', windowResize);
+
       $('html, body').css({
         overflow: 'auto'
       });
-
-      $(window).unbind('resize', windowResize);
-    }
+    },
 
     show = function(useAutoHide){
-      prepareDom();
+      prepareWindow();
+
       el.fadeIn(o.showTransition, function(){
+        o.pageLoaded();
         if(useAutoHide){
           window.setTimout(hide, o.hideDelay);
         }
-      })
+      });
+
+      return false;
     },
 
     hide = function(){
       // Unhide the rest of the stuff before we fadeout.
       if(o.hiddenClassEl) $(o.hiddenClassEl).removeClass(o.hiddenClass);
 
-      el.fadeOut(o.hideTransition, function(){
-        releaseDom();
-      });
-    };
+      o.pageOnExit();
 
-    // Add a backwards reference to element
-    el.data("pullPage", this);
+      el.fadeOut(o.hideTransition, function(){
+        releaseWindow();
+      });
+
+      return false;
+    };
 
     if(o.showHideLink){
       hideLink
@@ -84,10 +93,6 @@
         .appendTo(el);
       el.bind('dblclick', hide);
     }
-
-    // Make an inner element to house the content
-    el.wrapInner('<div class="pullPage-inner" style="position: relative">')
-      .addClass(o.containerClass);
 
     // Only initialize if it's set in the options
     // and do so after specified timeout.
@@ -97,12 +102,10 @@
       }, o.initDelay);
     }
 
-    // Return these methods as public
     return {
       el: el,
       show: show,
-      hide: hide,
-      options: o
+      hide: hide
     };
   };
 
@@ -113,18 +116,22 @@
   };
 
   $.fn.pullPage.defaults = {
-    hiddenClass     : 'pullPage-hidden',
-    hiddenClassEl   : false,
-    containerClass  : 'pullPage-container',    // Class for pullPage container.
-    autoShow        : true,                   // Shows pullPage after `initDelay` ms.
-    autoHide        : false,                  // Hides pullPage after `hideDelay` ms.
-    showTransition  : 0,                      // n milliseconds for fadeIn transition
-    initDelay       : 0,                      // n milliseconds before autoInit is called.
-    hideDelay       : 3000,                   // n milliseconds before autoHide is called.
-    hideLinkClass   : 'pullPage-hide-link',   // class for close
-    hideLinkText    : 'Hide me!',
-    hideTransition  : 500,                    // n milliseconds for fadeOut transition
-    showHideLink    : true                    // Append a link to manually close  pullPage.
+    autoShow        : true,                   // Shows pullPage as soon as it's initialized.
+    autoHide        : false,                  // Hides pullPage after activated.
+    initDelay       : 0,                      // Delay setting for `autoShow`
+    hideDelay       : 3000,                   // Delay setting for `autoHide`
+    showTransition  : 0,                      // Milliseconds for pullPage fadeIn transition
+    hideTransition  : 500,                    // Milliseconds for pullPage fadeOut transition
+    showHideLink    : true,                   // Append a link to manually close  pullPage.
+    hideLinkText    : 'Hide',                 // Text to display inside the hide link
+    hideLinkClass   : 'pullPage-hide-link',   // Class for hide link
+    containerClass  : 'pullPage-container',   // Class for pullPage container.
+    hiddenClass     : 'pullPage-hidden',      // This class should be applied to the container
+                                              // for the rest of your site. Cannot be applied to the body.
+    hiddenClassEl   : $('#siteContainer'),    // Specify a $ selector for the element to apply
+                                              // the hiddenClass to. Pass false to not set a class.
+    pageLoaded      : function(){},           // Called immediately after the pullPage is loaded.
+    pageOnExit      : function(){}            // Called right before the page is transitioned out.
   };
 
 })(jQuery);
